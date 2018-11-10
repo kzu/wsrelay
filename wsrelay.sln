@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28307.56
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wsrelay", "wsrelay\wsrelay.csproj", "{C860BDA7-7EAE-4EF3-95D9-A9044A86040C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wsrelay.tests", "wsrelay.tests\wsrelay.tests.csproj", "{2892153F-0782-48A9-B4A4-ACDF7A0B5553}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C860BDA7-7EAE-4EF3-95D9-A9044A86040C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C860BDA7-7EAE-4EF3-95D9-A9044A86040C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C860BDA7-7EAE-4EF3-95D9-A9044A86040C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C860BDA7-7EAE-4EF3-95D9-A9044A86040C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2892153F-0782-48A9-B4A4-ACDF7A0B5553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2892153F-0782-48A9-B4A4-ACDF7A0B5553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2892153F-0782-48A9-B4A4-ACDF7A0B5553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2892153F-0782-48A9-B4A4-ACDF7A0B5553}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9E1C07C7-509D-44E8-9C1B-4F79A1B50C93}
+	EndGlobalSection
+EndGlobal
