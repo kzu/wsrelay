@@ -17,30 +17,30 @@ namespace wsrelay
         ConcurrentDictionary<WebSocket, BlockingCollection<Message>> output = new ConcurrentDictionary<WebSocket, BlockingCollection<Message>>();
         private ILogger logger;
 
-        public const string SessionIdHeader = "X-SessionId";
+        public const string HubHeader = "X-HUB";
 
         public Relay(ILogger logger) => this.logger = logger;
 
         public async Task ProcessAsync(HttpContext context, WebSocket socket)
         {
-            var sessionId = context.Request.Headers[SessionIdHeader];
-            if (sessionId == StringValues.Empty)
+            var hubId = context.Request.Headers[HubHeader];
+            if (hubId == StringValues.Empty)
                 return;
 
-            var sockets = sessions.GetOrAdd(sessionId.ToString(), _ => new List<WebSocket>());
+            var sockets = sessions.GetOrAdd(hubId.ToString(), _ => new List<WebSocket>());
             lock (sockets)
                 sockets.Add(socket);
 
-            logger.LogTrace("Processing new connection for session {0}", sessionId);
+            logger.LogTrace("Processing new connection for hub {0}", hubId);
 
             var cts = new CancellationTokenSource();
             context.RequestAborted.Register(() => cts.Cancel());
 
 #pragma warning disable CS4014 // We don't await this call because it must run on a separate thread
-            Task.Run(() => SendAsync(sockets, socket, sessionId, cts.Token));
+            Task.Run(() => SendAsync(sockets, socket, hubId, cts.Token));
 #pragma warning restore CS4014
 
-            await ReadAsync(sockets, socket, sessionId, cts.Token);
+            await ReadAsync(sockets, socket, hubId, cts.Token);
             cts.Cancel();
         }
 
@@ -53,14 +53,14 @@ namespace wsrelay
             {
                 try
                 {
-                    logger.LogTrace("Got message to broadcast for session {0}", sessionId);
+                    logger.LogTrace("Got message to broadcast for hub {0}", sessionId);
                     await socket.SendAsync(new ArraySegment<byte>(message.Payload), message.MessageType, true, cancellation);
                 }
                 catch (Exception e)
                 {
                     try
                     {
-                        logger.LogWarning("Sending failed for socket on session {0}. Closing...", sessionId);
+                        logger.LogWarning("Sending failed for socket on hub {0}. Closing...", sessionId);
                         await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Failed to broadcast message to client", CancellationToken.None);
                     }
                     finally
@@ -91,7 +91,7 @@ namespace wsrelay
                     mem.Write(buffer, 0, result.Count);
                     if (result.EndOfMessage)
                     {
-                        logger.LogTrace("Read complete message for session {0}...", sessionId);
+                        logger.LogTrace("Read complete message for hub {0}...", sessionId);
                         foreach (var other in sockets.ToArray())
                         {
                             if (other == socket)
@@ -103,13 +103,13 @@ namespace wsrelay
                     }
                     else
                     {
-                        logger.LogTrace("Read partial message for session {0}...", sessionId);
+                        logger.LogTrace("Read partial message for hub {0}...", sessionId);
                     }
 
                     result = await socket.ReceiveAsync(segment, CancellationToken.None);
                 }
 
-                logger.LogTrace("Closing socket for session {0}: {1}", sessionId, result.CloseStatusDescription);
+                logger.LogTrace("Closing socket for hub {0}: {1}", sessionId, result.CloseStatusDescription);
                 await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             }
             finally

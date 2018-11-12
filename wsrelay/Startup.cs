@@ -45,6 +45,16 @@ namespace wsrelay
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
+                    var auth = context.Request.Headers["Authorization"];
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_KEY")) && 
+                        (auth == StringValues.Empty || auth != Environment.GetEnvironmentVariable("API_KEY")))
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        await context.Response.WriteAsync("Invalid or missing Authorization header.", context.RequestAborted);
+                        context.Abort();
+                        return;
+                    }
+
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                     // The /echo endpoint can be used as a sort of ping to detect whether 
                     // the service is working properly. It just returns the same messages 
@@ -53,11 +63,12 @@ namespace wsrelay
                     {
                         await EchoAsync(context, webSocket);
                     }
-                    else if (context.Request.Headers[Relay.SessionIdHeader] == StringValues.Empty)
+                    else if (context.Request.Headers[Relay.HubHeader] == StringValues.Empty)
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        await context.Response.WriteAsync(Relay.SessionIdHeader + " header not found.", context.RequestAborted);
+                        await context.Response.WriteAsync(Relay.HubHeader + " header not found.", context.RequestAborted);
                         context.Abort();
+                        return;
                     }
                     else
                     {
@@ -109,7 +120,9 @@ namespace wsrelay
             try
             {
                 var client = new ClientWebSocket();
-                client.Options.SetRequestHeader("X-SessionId", Guid.NewGuid().ToString());
+                client.Options.SetRequestHeader("Authorization", Environment.GetEnvironmentVariable("API_KEY"));
+                client.Options.SetRequestHeader(Relay.HubHeader, Guid.NewGuid().ToString());
+
                 // See https://github.com/aspnet/IISIntegration/blob/master/src/Microsoft.AspNetCore.Server.IISIntegration/WebHostBuilderIISExtensions.cs#L47
                 var pairingToken = Environment.GetEnvironmentVariable($"ASPNETCORE_TOKEN");
                 if (!string.IsNullOrEmpty(pairingToken))

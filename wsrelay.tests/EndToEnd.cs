@@ -13,7 +13,7 @@ namespace wsrelay.tests
     public class EndToEnd
     {
         [Fact]
-        public async Task sessions()
+        public void sessions()
         {
             Task.WaitAll(Enumerable.Range(0, 20).Select(_ => Task.Run(connect)).ToArray());
         }
@@ -21,16 +21,18 @@ namespace wsrelay.tests
         [Fact]
         public async Task connect()
         {
-            var uri = new Uri("wss://wsrelay.azurewebsites.net");
+            var uri = new Uri($"wss://{ThisAssembly.Metadata.APP_HOSTNAME}");
             //var uri = new Uri("wss://localhost:5001");
 
             var sender = new ClientWebSocket();
             var sessionId = Guid.NewGuid().ToString();
-            sender.Options.SetRequestHeader("X-SessionId", sessionId);
+            sender.Options.SetRequestHeader("X-HUB", sessionId);
+            sender.Options.SetRequestHeader("Authorization", ThisAssembly.Metadata.API_KEY);
             await sender.ConnectAsync(uri, CancellationToken.None);
 
             var receiver = new ClientWebSocket();
-            receiver.Options.SetRequestHeader("X-SessionId", sessionId);
+            receiver.Options.SetRequestHeader("X-HUB", sessionId);
+            receiver.Options.SetRequestHeader("Authorization", ThisAssembly.Metadata.API_KEY);
             await receiver.ConnectAsync(uri, CancellationToken.None);
 
             var payload = new byte[1024 * 8];
