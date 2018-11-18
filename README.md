@@ -77,7 +77,7 @@ interesting limitations, though:
   * The [free tier](https://azure.microsoft.com/en-us/pricing/details/signalr-service/) 
     has a limit of 20 concurrent connections and 20k messages 
   * SignalR itself ultimately exchanges JSON-serialized payloads as strings, meaning 
-    if you need to exchange binary payloads, you'd need to Base64-encode it, which 
+    if you need to exchange binary payloads, you'd need to Base64-encode them, which 
     increases the size of the transfered data and (for now?) 
     [does not support compression at the WebSocket level](https://github.com/dotnet/corefx/issues/15430).
 
@@ -88,25 +88,27 @@ It has its own set of limitations too:
   * There is [no free tier](https://azure.microsoft.com/en-us/pricing/details/service-bus/), 
     and there is a significant $9.78 price *per listener* (that is the part that does the 
     useful thing when clients connect).
-  * There is signigicant management overhead, since you need to create each of those "listener 
+  * There is significant management overhead, since you need to create each of those "listener 
     endpoints" ahead of time (since they cost money) and doing so automatically is far
-    from trivial.
+    from trivial (involving the [Azure Resource Manager](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview) 
+    and deployment templates and what-not).
   * Setting up the end-to-end connection is also 
     [far from simple](https://docs.microsoft.com/en-us/azure/service-bus-relay/relay-hybrid-connections-dotnet-get-started) 
-      and is a long shot from what a typical `HttpClient` connection looks like.
+    and is a long shot from what a typical `HttpClient` connection looks like.
 
 
 The [Azure App Service](https://azure.microsoft.com/en-us/pricing/details/app-service/windows/) 
 provides a cost-effective alternative that supports WebSockets too. It has its own 
 limitations too: 
 
-  * You need to deploy the app yourself (although doing it from GitHub is trivial)
+  * You need to deploy the app yourself (although doing it from GitHub is trivial, 
+    as shown in the [Deployment](#deployment) steps above)
   * Scaling out instances is not as easy. You will need to either use the 
     [Azure Application Gateway](https://azure.microsoft.com/en-us/pricing/details/application-gateway/) 
     or [Application Request Routing](https://blogs.msdn.microsoft.com/tconte/2013/09/19/advanced-cookie-based-session-affinity-with-application-request-routing/) 
-    so that requests that share the same `X-SessionId` custom header are served by 
+    so that requests that share the same `X-HUB` custom header are served by 
     the same server (given the current simple implementation which just keeps an in-memory list of clients).
 
-If your use cases can live with the above limitations, the `wsrelay` can be trivially 
+If your use cases can live with these limitations, the `wsrelay` can be trivially 
 deployed and run in just a few minutes, and provide fast connectivity for your real-time 
 collaboration needs.
