@@ -8,8 +8,11 @@ string) can broadcast messages between them.
 
 ## Deployment
 
-The easiest way to deploy your own instance of the relay is to use Azure App Service
- and Azure DevOps, as follows:
+<a href="https://azuredeploy.net/" target="_blank">
+    <img src="https://azuredeploy.net/deploybutton.png"/>
+</a>
+
+Just click the button 👆 or alternatively, do it the hard way:
 
 1. Fork this repository to your account
 2. Create a [new Web App](https://portal.azure.com/#create/Microsoft.WebSite) in the Azure 
