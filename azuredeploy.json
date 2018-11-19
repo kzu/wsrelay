@@ -102,7 +102,8 @@
           "[resourceId('Microsoft.Web/serverfarms', parameters('webAppName'))]"
       ],
       "properties": {
-          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('webAppName'))]"
+          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('webAppName'))]",
+          "httpsOnly": true
       },
       "tags": {
         "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('webAppName'))]": "empty"
@@ -116,8 +117,13 @@
             "[resourceId('Microsoft.Web/Sites', parameters('webAppName'))]"
           ],
           "properties": {
+            "nodeVersion": "",
             "phpVersion": "",
-            "httpsOnly": true,
+            "pythonVersion": "",
+            "javaVersion": null,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
             "webSocketsEnabled": true
           }
         },
