@@ -1,0 +1,144 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "The WebSockets relay app name "
+      },
+      "minLength": 2
+    },
+    "apiKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The API key that clients will need to pass via Authorization header "
+      },
+      "minLength": 2
+    },
+    "hostingPlanSku": {
+      "type": "string",
+      "defaultValue": "F1",
+      "allowedValues": [
+          "F1",
+          "D1",
+          "B1",
+          "B2",
+          "B3",
+          "S1",
+          "S2",
+          "S3",
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+      ],
+      "metadata": {
+          "description": "The pricing tier for the App Service plan"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "centralus",
+      "metadata": {
+        "description": "Location for all resources."
+      },
+      "allowedValues": [
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2",
+        "koreacentral",
+        "koreasouth"
+      ]      
+    },
+    "repoUrl": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-09-01",
+      "type": "Microsoft.Web/serverfarms",
+      "kind": "app",
+      "name": "[parameters('webAppName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('hostingPlanSku')]"
+      },
+      "properties": {
+          "name": "[parameters('webAppName')]"
+      }
+    },
+    {
+      "apiVersion": "2016-08-01",
+      "name": "[parameters('webAppName')]",
+      "type": "Microsoft.Web/Sites",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+          "[resourceId('Microsoft.Web/serverfarms', parameters('webAppName'))]"
+      ],
+      "properties": {
+          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('webAppName'))]"
+      },
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('webAppName'))]": "empty"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('webAppName'))]"
+          ],
+          "properties": {
+            "appSettings": [
+              {
+                "name": "API_KEY",
+                "value": "[parameters('apiKey')]"
+              }
+            ]
+          }
+        },
+        {
+          "apiVersion": "2015-08-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('webAppName'))]",
+            "[concat('Microsoft.Web/Sites/', parameters('webAppName'), '/config/web')]"
+          ],
+          "properties": {
+            "RepoUrl": "[parameters('repoUrl')]",
+            "branch": "[parameters('branch')]",
+            "IsManualIntegration": true
+          }
+        }
+      ]
+    }
+  ]
+}
