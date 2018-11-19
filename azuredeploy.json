@@ -109,14 +109,13 @@
       },
       "resources": [
         {
-          "apiVersion": "2015-08-01",
+          "apiVersion": "2016-03-01",
           "type": "config",
           "name": "web",
           "dependsOn": [
             "[resourceId('Microsoft.Web/Sites', parameters('webAppName'))]"
           ],
           "properties": {
-            "clientAffinityEnabled": false,
             "phpVersion": "",
             "httpsOnly": true,
             "webSocketsEnabled": true,
@@ -131,7 +130,7 @@
             }
         },
         {
-          "apiVersion": "2015-08-01",
+          "apiVersion": "2016-03-01",
           "name": "web",
           "type": "sourcecontrols",
           "dependsOn": [
