@@ -109,7 +109,7 @@
       },
       "resources": [
         {
-          "apiVersion": "2016-03-01",
+          "apiVersion": "2015-08-01",
           "type": "config",
           "name": "web",
           "dependsOn": [
@@ -118,19 +118,22 @@
           "properties": {
             "phpVersion": "",
             "httpsOnly": true,
-            "webSocketsEnabled": true,
-            "siteConfig": {
-              "appSettings": [
-                  {
-                    "name": "API_KEY",
-                    "value": "[parameters('apiKey')]"
-                  }
-                ]
-              }
-            }
+            "webSocketsEnabled": true
+          }
         },
         {
-          "apiVersion": "2016-03-01",
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
+          ],
+          "properties": {
+            "API_KEY": "[parameters('apiKey')]"
+          }
+        },        
+        {
+          "apiVersion": "2015-08-01",
           "name": "web",
           "type": "sourcecontrols",
           "dependsOn": [
