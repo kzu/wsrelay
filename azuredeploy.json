@@ -4,9 +4,15 @@
   "parameters": {
     "webAppName": {
       "type": "string",
-      "defaultValue": "[uniquestring('wsrelay')]",
       "metadata": {
         "description": "The WebSockets relay app name "
+      },
+      "minLength": 2
+    },
+    "apiKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The API key that clients will need to pass via Authorization header "
       },
       "minLength": 2
     },
@@ -113,7 +119,7 @@
             "appSettings": [
               {
                 "name": "API_KEY",
-                "value": "[guid(resourceGroup().id, deployment().name)]"
+                "value": "[parameters('apiKey')]"
               }
             ]
           }
