@@ -116,13 +116,19 @@
             "[resourceId('Microsoft.Web/Sites', parameters('webAppName'))]"
           ],
           "properties": {
-            "appSettings": [
-              {
-                "name": "API_KEY",
-                "value": "[parameters('apiKey')]"
+            "clientAffinityEnabled": false,
+            "phpVersion": "",
+            "httpsOnly": true,
+            "webSocketsEnabled": true,
+            "siteConfig": {
+              "appSettings": [
+                  {
+                    "name": "API_KEY",
+                    "value": "[parameters('apiKey')]"
+                  }
+                ]
               }
-            ]
-          }
+            }
         },
         {
           "apiVersion": "2015-08-01",
