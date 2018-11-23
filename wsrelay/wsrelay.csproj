@@ -12,4 +12,10 @@
     <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
   </ItemGroup>
 
+  <Target Name="GetPublishedItems" DependsOnTargets="Publish" Returns="@(PublishedItem -> '%(FullPath)')">
+    <ItemGroup>
+      <PublishedItem Include="$(PublishDir)**\*.*" />
+    </ItemGroup>
+  </Target>
+
 </Project>
