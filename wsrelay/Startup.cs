@@ -32,7 +32,8 @@ namespace wsrelay
             serverAddresses = serverAddressesFeature?.Addresses;
             var addresses = string.Join(", ", serverAddressesFeature?.Addresses);
 
-            logger.LogInformation($"Addresses: {addresses}");
+            if (!string.IsNullOrEmpty(addresses))
+                logger.LogInformation($"Addresses: {addresses}");
 
             if (env.IsDevelopment())
             {
@@ -46,11 +47,24 @@ namespace wsrelay
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     var auth = context.Request.Headers["Authorization"];
+
+                    // Always require a matching API_KEY if configured (someone can decide to make a 
+                    // wsrelay available that does not require even an API_KEY).
                     if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_KEY")) && 
                         (auth == StringValues.Empty || auth != Environment.GetEnvironmentVariable("API_KEY")))
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                         await context.Response.WriteAsync("Invalid or missing Authorization header.", context.RequestAborted);
+                        context.Abort();
+                        return;
+                    }
+
+                    // Always require the X-HUB header, since that's what ties "channels" or "rooms", 
+                    // otherwise it's not useful.
+                    if (string.IsNullOrEmpty(context.Request.Headers[Relay.HubHeader]))
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        await context.Response.WriteAsync(Relay.HubHeader + " header not found.", context.RequestAborted);
                         context.Abort();
                         return;
                     }
@@ -63,14 +77,7 @@ namespace wsrelay
                     {
                         await EchoAsync(context, webSocket);
                     }
-                    else if (context.Request.Headers[Relay.HubHeader] == StringValues.Empty)
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        await context.Response.WriteAsync(Relay.HubHeader + " header not found.", context.RequestAborted);
-                        context.Abort();
-                        return;
-                    }
-                    else
+                    else 
                     {
                         await relay.ProcessAsync(context, webSocket);
                     }
