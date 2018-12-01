@@ -127,8 +127,13 @@ namespace wsrelay
             try
             {
                 var client = new ClientWebSocket();
-                client.Options.SetRequestHeader("Authorization", Environment.GetEnvironmentVariable("API_KEY"));
-                client.Options.SetRequestHeader(Relay.HubHeader, Guid.NewGuid().ToString());
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_KEY")))
+                    client.Options.SetRequestHeader("Authorization", Environment.GetEnvironmentVariable("API_KEY"));
+
+                if (!string.IsNullOrEmpty(context.Request.Headers[Relay.HubHeader]))
+                    client.Options.SetRequestHeader(Relay.HubHeader, context.Request.Headers[Relay.HubHeader]);
+                else
+                    client.Options.SetRequestHeader(Relay.HubHeader, Guid.NewGuid().ToString());
 
                 // See https://github.com/aspnet/IISIntegration/blob/master/src/Microsoft.AspNetCore.Server.IISIntegration/WebHostBuilderIISExtensions.cs#L47
                 var pairingToken = Environment.GetEnvironmentVariable($"ASPNETCORE_TOKEN");
