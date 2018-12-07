@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>5d241e80-88a4-4f77-b4a3-519efe5a287c</UserSecretsId>
     <AspNetCoreHostingModel Condition="'$(Configuration)' == 'Debug'">inprocess</AspNetCoreHostingModel>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
