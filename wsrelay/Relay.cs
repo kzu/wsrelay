@@ -106,7 +106,7 @@ namespace wsrelay
                         logger.LogTrace("Read partial message for hub {0}...", sessionId);
                     }
 
-                    result = await socket.ReceiveAsync(segment, CancellationToken.None);
+                    result = await socket.ReceiveAsync(segment, cancellation);
                 }
 
                 logger.LogTrace("Closing socket for hub {0}: {1}", sessionId, result.CloseStatusDescription);
