@@ -99,6 +99,8 @@ namespace wsrelay
 
                             output.GetOrAdd(other, _ => new BlockingCollection<Message>())
                                 .Add(new Message(result.MessageType, mem.ToArray()));
+
+                            mem = new MemoryStream();
                         }
                     }
                     else
