@@ -60,7 +60,7 @@ namespace wsrelay
                 {
                     try
                     {
-                        logger.LogWarning("Sending failed for socket on hub {0}. Closing...", sessionId);
+                        logger.LogWarning("Sending failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
                         await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Failed to broadcast message to client", CancellationToken.None);
                     }
                     finally
