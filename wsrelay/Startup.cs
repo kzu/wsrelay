@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -126,6 +127,7 @@ namespace wsrelay
 
             try
             {
+                var clock = Stopwatch.StartNew();
                 var client = new ClientWebSocket();
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_KEY")))
                     client.Options.SetRequestHeader("Authorization", Environment.GetEnvironmentVariable("API_KEY"));
@@ -153,7 +155,8 @@ namespace wsrelay
 
                 logger.LogInformation("Successfully send ping data to {0}...", socketUri.Uri);
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
-                await context.Response.WriteAsync("ack", context.RequestAborted);
+                clock.Stop();
+                await context.Response.WriteAsync($"ack in {clock.ElapsedMilliseconds} ms", context.RequestAborted);
             }
             catch (Exception e)
             {
