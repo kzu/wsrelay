@@ -5,14 +5,22 @@
     <title>WebSockets Relay</title>
 </head>
 <body>
+    <h1 style="background-image: url(https://raw.github.com/kzu/wsrelay/master/icon/32.png); background-repeat: no-repeat; padding-left: 36px">
+        wsrelay: a minimalistic WebSocket relay
+    </h1>
     <p>
-    A web app that relays WebSocket connections based on a
-    custom X-SessionId header specified by the clients. 
+        A web app that relays <a href="https://en.wikipedia.org/wiki/WebSocket">WebSocket</a> connections based on a
+        custom <code>X-SessionId</code> header specified by the clients.
     </p>
     <p>
-    Messages sent by a client are broadcasted in realtime 
-    to all other WebSocket-connected clients that have the 
-    same header value.
+        An optional server-side configured <code>API_KEY</code> environment variable can force clients to pass the
+        same value as the <code>Authorization</code> header before a connection is accepted.
     </p>
+    <p>
+        Messages sent by a client are broadcasted in realtime
+        to all other WebSocket-connected clients that have the
+        same header value.
+    </p>
+    Source code available on <a href="https://github.com/kzu/wsrelay">GitHub</a>.
 </body>
 </html>
