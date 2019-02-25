@@ -156,7 +156,7 @@ namespace wsrelay
                 logger.LogInformation("Successfully send ping data to {0}...", socketUri.Uri);
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 clock.Stop();
-                await context.Response.WriteAsync($"ack in {clock.ElapsedMilliseconds} ms", context.RequestAborted);
+                await context.Response.WriteAsync($"ack&nbsp;in&nbsp;{clock.ElapsedMilliseconds}&nbsp;ms", context.RequestAborted);
             }
             catch (Exception e)
             {
