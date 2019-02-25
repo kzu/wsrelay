@@ -1,4 +1,5 @@
-# A minimalistic WebSocket relay
+![Icon](https://raw.github.com/kzu/wsrelay/master/icon/32.png) wsrelay: a minimalistic WebSocket relay
+============
 
 An ASP.NET Core web service that acts as a relay for incoming WebSocket connections 
 based on a required custom `X-HUB` header. 
