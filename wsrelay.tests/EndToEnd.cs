@@ -84,5 +84,22 @@ namespace wsrelay.tests
                 Assert.Equal(payload[i], received[i]);
             }
         }
+
+        [Fact]
+        public async Task connectdontclose()
+        {
+            var uri = new Uri($"wss://{ThisAssembly.Metadata.APP_HOSTNAME}");
+
+            var sender = new ClientWebSocket();
+            var sessionId = Guid.NewGuid().ToString();
+            sender.Options.SetRequestHeader("X-HUB", sessionId);
+            sender.Options.SetRequestHeader("Authorization", ThisAssembly.Metadata.API_KEY);
+            await sender.ConnectAsync(uri, CancellationToken.None);
+
+            var payload = new byte[1024 * 8];
+            new Random().NextBytes(payload);
+
+            await sender.SendAsync(new ArraySegment<byte>(payload), WebSocketMessageType.Binary, true, CancellationToken.None);
+        }
     }
 }

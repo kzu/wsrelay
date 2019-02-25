@@ -37,24 +37,25 @@ namespace wsrelay
             context.RequestAborted.Register(() => cts.Cancel());
 
 #pragma warning disable CS4014 // We don't await this call because it must run on a separate thread
-            Task.Run(() => SendAsync(sockets, socket, hubId, cts.Token));
+            Task.Run(() => SendAsync(sockets, socket, hubId, cts));
 #pragma warning restore CS4014
 
-            await ReadAsync(sockets, socket, hubId, cts.Token);
-            cts.Cancel();
+            await ReadAsync(sockets, socket, hubId, cts);
+            if (!cts.IsCancellationRequested)
+                cts.Cancel();
         }
 
-        private async Task SendAsync(List<WebSocket> sockets, WebSocket socket, string sessionId, CancellationToken cancellation)
+        private async Task SendAsync(List<WebSocket> sockets, WebSocket socket, string sessionId, CancellationTokenSource cancellation)
         {
             logger.LogTrace("Starting SendAsync loop...");
 
             var messages = output.GetOrAdd(socket, _ => new BlockingCollection<Message>());
-            foreach (var message in messages.GetConsumingEnumerable(cancellation))
+            foreach (var message in messages.GetConsumingEnumerable(cancellation.Token))
             {
                 try
                 {
                     logger.LogTrace("Got message to broadcast for hub {0}", sessionId);
-                    await socket.SendAsync(new ArraySegment<byte>(message.Payload), message.MessageType, true, cancellation);
+                    await socket.SendAsync(new ArraySegment<byte>(message.Payload), message.MessageType, true, cancellation.Token);
                 }
                 catch (Exception e)
                 {
@@ -63,16 +64,20 @@ namespace wsrelay
                         logger.LogWarning("Sending failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
                         await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Failed to broadcast message to client", CancellationToken.None);
                     }
+                    catch (Exception) { }
                     finally
                     {
                         lock (sockets)
                             sockets.Remove(socket);
+
+                        if (!cancellation.IsCancellationRequested)
+                            cancellation.Cancel();
                     }
                 }
             }
         }
 
-        private async Task ReadAsync(List<WebSocket> sockets, WebSocket socket, string sessionId, CancellationToken cancellation)
+        private async Task ReadAsync(List<WebSocket> sockets, WebSocket socket, string sessionId, CancellationTokenSource cancellation)
         {
             try
             {
@@ -83,7 +88,7 @@ namespace wsrelay
 
                 logger.LogTrace("Starting ReadAsync loop...");
 
-                var result = await socket.ReceiveAsync(segment, cancellation);
+                var result = await socket.ReceiveAsync(segment, cancellation.Token);
                 while (socket.State == WebSocketState.Open && !result.CloseStatus.HasValue)
                 {
                     logger.LogTrace("Received {0} bytes...", result.Count);
@@ -108,11 +113,26 @@ namespace wsrelay
                         logger.LogTrace("Read partial message for hub {0}...", sessionId);
                     }
 
-                    result = await socket.ReceiveAsync(segment, cancellation);
+                    result = await socket.ReceiveAsync(segment, cancellation.Token);
                 }
 
                 logger.LogTrace("Closing socket for hub {0}: {1}", sessionId, result.CloseStatusDescription);
                 await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    // Try closing the socket properly
+                    logger.LogWarning("Read failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
+                    await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Failed to broadcast message to client", CancellationToken.None);
+                }
+                catch (Exception) { }
+                finally
+                {
+                    if (!cancellation.IsCancellationRequested)
+                        cancellation.Cancel();
+                }
             }
             finally
             {
