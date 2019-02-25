@@ -156,7 +156,18 @@ namespace wsrelay
                 logger.LogInformation("Successfully send ping data to {0}...", socketUri.Uri);
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 clock.Stop();
-                await context.Response.WriteAsync($"ack&nbsp;in&nbsp;{clock.ElapsedMilliseconds}&nbsp;ms", context.RequestAborted);
+                await context.Response.WriteAsync($@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>WebSockets Relay</title>
+</head>
+<body>
+    <p style='height: 32px; background-image: url(https://raw.github.com/kzu/wsrelay/master/icon/32.png); background-repeat: no-repeat; padding-left: 36px; padding-top: 7px'>
+        ack in {clock.ElapsedMilliseconds} ms
+    </p>
+</body>
+</html>", context.RequestAborted);
             }
             catch (Exception e)
             {
