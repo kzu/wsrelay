@@ -79,7 +79,7 @@ provides one such service so you don't have to deploy your own server. It has a 
 interesting limitations, though: 
 
   * The [free tier](https://azure.microsoft.com/en-us/pricing/details/signalr-service/) 
-    has a limit of 20 concurrent connections and 20k messages 
+    has a limit of 20 concurrent connections and 20k messages per day
   * SignalR itself ultimately exchanges JSON-serialized payloads as strings, meaning 
     if you need to exchange binary payloads, you'd need to Base64-encode them, which 
     increases the size of the transfered data and (for now?) 
@@ -98,12 +98,12 @@ It has its own set of limitations too:
     and deployment templates and what-not).
   * Setting up the end-to-end connection is also 
     [far from simple](https://docs.microsoft.com/en-us/azure/service-bus-relay/relay-hybrid-connections-dotnet-get-started) 
-    and is a long shot from what a typical `HttpClient` connection looks like.
+    and is a long shot from what a typical `HttpClient` or `ClientWebSocket` connection looks like.
 
 
 The [Azure App Service](https://azure.microsoft.com/en-us/pricing/details/app-service/windows/) 
-provides a cost-effective alternative that supports WebSockets too. It has its own 
-limitations too: 
+provides a cost-effective alternative that supports WebSockets too (and is what `wsrelay` 
+uses). It has its own limitations too: 
 
   * You need to deploy the app yourself (although doing it from GitHub is trivial, 
     as shown in the [Deployment](#deployment) steps above)
