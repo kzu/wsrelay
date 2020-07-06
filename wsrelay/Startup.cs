@@ -33,7 +33,7 @@ namespace wsrelay
             serverAddresses = serverAddressesFeature?.Addresses;
             var addresses = string.Join(", ", serverAddressesFeature?.Addresses);
 
-            if (!string.IsNullOrEmpty(addresses))
+            if (!string.IsNullOrEmpty(addresses) && logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation($"Addresses: {addresses}");
 
             if (env.IsDevelopment())
@@ -143,9 +143,13 @@ namespace wsrelay
                     // See https://github.com/aspnet/IISIntegration/blob/master/src/Microsoft.AspNetCore.Server.IISIntegration/IISMiddleware.cs#L89
                     client.Options.SetRequestHeader("MS-ASPNETCORE-TOKEN", pairingToken);
 
-                logger.LogInformation("Pinging {0}...", socketUri.Uri);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Pinging {0}...", socketUri.Uri);
+
                 await client.ConnectAsync(socketUri.Uri, context.RequestAborted);
-                logger.LogInformation("Successfully connected to {0}...", socketUri.Uri);
+
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Successfully connected to {0}...", socketUri.Uri);
 
                 var payload = new byte[1024 * 8];
                 new Random().NextBytes(payload);
@@ -153,7 +157,9 @@ namespace wsrelay
                 await client.SendAsync(new ArraySegment<byte>(payload), WebSocketMessageType.Binary, true, context.RequestAborted);
                 await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", context.RequestAborted);
 
-                logger.LogInformation("Successfully send ping data to {0}...", socketUri.Uri);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Successfully send ping data to {0}...", socketUri.Uri);
+
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 clock.Stop();
                 await context.Response.WriteAsync($@"<!DOCTYPE html>

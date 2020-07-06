@@ -31,7 +31,8 @@ namespace wsrelay
             lock (sockets)
                 sockets.Add(socket);
 
-            logger.LogTrace("Processing new connection for hub {0}", hubId);
+            if (logger.IsEnabled(LogLevel.Trace))
+                logger.LogTrace("Processing new connection for hub {0}", hubId);
 
             var cts = new CancellationTokenSource();
             context.RequestAborted.Register(() => cts.Cancel());
@@ -47,21 +48,26 @@ namespace wsrelay
 
         private async Task SendAsync(List<WebSocket> sockets, WebSocket socket, string sessionId, CancellationTokenSource cancellation)
         {
-            logger.LogTrace("Starting SendAsync loop...");
+            if (logger.IsEnabled(LogLevel.Trace))
+                logger.LogTrace("Starting SendAsync loop...");
 
             var messages = output.GetOrAdd(socket, _ => new BlockingCollection<Message>());
             foreach (var message in messages.GetConsumingEnumerable(cancellation.Token))
             {
                 try
                 {
-                    logger.LogTrace("Got message to broadcast for hub {0}", sessionId);
+                    if (logger.IsEnabled(LogLevel.Trace))
+                        logger.LogTrace("Got message to broadcast for hub {0}", sessionId);
+                    
                     await socket.SendAsync(new ArraySegment<byte>(message.Payload), message.MessageType, true, cancellation.Token);
                 }
                 catch (Exception e)
                 {
                     try
                     {
-                        logger.LogWarning("Sending failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
+                        if (logger.IsEnabled(LogLevel.Warning))
+                            logger.LogWarning("Sending failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
+
                         await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Failed to broadcast message to client", CancellationToken.None);
                     }
                     catch (Exception) { }
@@ -86,17 +92,21 @@ namespace wsrelay
                 var segment = new ArraySegment<byte>(buffer);
                 var mem = new MemoryStream();
 
-                logger.LogTrace("Starting ReadAsync loop...");
+                if (logger.IsEnabled(LogLevel.Trace))
+                    logger.LogTrace("Starting ReadAsync loop...");
 
                 var result = await socket.ReceiveAsync(segment, cancellation.Token);
                 while (socket.State == WebSocketState.Open && !result.CloseStatus.HasValue)
                 {
-                    logger.LogTrace("Received {0} bytes...", result.Count);
+                    if (logger.IsEnabled(LogLevel.Trace))
+                        logger.LogTrace("Received {0} bytes...", result.Count);
 
                     mem.Write(buffer, 0, result.Count);
                     if (result.EndOfMessage)
                     {
-                        logger.LogTrace("Read complete message for hub {0}...", sessionId);
+                        if (logger.IsEnabled(LogLevel.Trace))
+                            logger.LogTrace("Read complete message for hub {0}...", sessionId);
+                        
                         foreach (var other in sockets.ToArray())
                         {
                             if (other == socket)
@@ -110,13 +120,16 @@ namespace wsrelay
                     }
                     else
                     {
-                        logger.LogTrace("Read partial message for hub {0}...", sessionId);
+                        if (logger.IsEnabled(LogLevel.Trace))
+                            logger.LogTrace("Read partial message for hub {0}...", sessionId);
                     }
 
                     result = await socket.ReceiveAsync(segment, cancellation.Token);
                 }
 
-                logger.LogTrace("Closing socket for hub {0}: {1}", sessionId, result.CloseStatusDescription);
+                if (logger.IsEnabled(LogLevel.Trace))
+                    logger.LogTrace("Closing socket for hub {0}: {1}", sessionId, result.CloseStatusDescription);
+                
                 await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             }
             catch (Exception e)
@@ -124,7 +137,9 @@ namespace wsrelay
                 try
                 {
                     // Try closing the socket properly
-                    logger.LogWarning("Read failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
+                    if (logger.IsEnabled(LogLevel.Warning))
+                        logger.LogWarning("Read failed for socket on hub {0} with {1}. Closing...", sessionId, e.Message);
+
                     await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Failed to broadcast message to client", CancellationToken.None);
                 }
                 catch (Exception) { }
