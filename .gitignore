@@ -14,5 +14,4 @@ obj
 *.log
 *.binlog
 *.rsp
-/src/Usage
-/src/Backup
+appsettings.Development.json

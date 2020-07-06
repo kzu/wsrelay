@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -22,13 +24,11 @@ namespace wsrelay
         Relay relay;
         ICollection<string> serverAddresses;
 
-        public void ConfigureServices(IServiceCollection services) { }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             this.logger = logger;
             relay = new Relay(logger);
-
+            
             var serverAddressesFeature = app.ServerFeatures.Get<IServerAddressesFeature>();
             serverAddresses = serverAddressesFeature?.Addresses;
             var addresses = string.Join(", ", serverAddressesFeature?.Addresses);
@@ -124,7 +124,7 @@ namespace wsrelay
 
             var socketUri = new UriBuilder(serverAddress);
             socketUri.Scheme = socketUri.Scheme == "https" ? "wss" : "ws";
-
+            
             try
             {
                 var clock = Stopwatch.StartNew();

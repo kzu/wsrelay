@@ -1,17 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>5d241e80-88a4-4f77-b4a3-519efe5a287c</UserSecretsId>
     <AspNetCoreHostingModel Condition="'$(Configuration)' == 'Debug'">inprocess</AspNetCoreHostingModel>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.WebListener" Version="1.1.4" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
-  </ItemGroup>
 
   <Target Name="GetPublishedItems" DependsOnTargets="Publish" Returns="@(PublishedItem -> '%(FullPath)')">
     <ItemGroup>

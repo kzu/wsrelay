@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Xunit;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -12,27 +13,41 @@ namespace wsrelay.tests
 {
     public class EndToEnd
     {
+        readonly string apiKey;
+        readonly string hostName;
+
+        public EndToEnd()
+        {
+            dynamic config = JsonConvert.DeserializeObject(File.ReadAllText("appsettings.Development.json"));
+
+            apiKey = config.API_KEY;
+            hostName = config.APP_HOSTNAME;
+        }
+
         [Fact]
         public void sessions()
         {
-            Task.WaitAll(Enumerable.Range(0, 20).Select(_ => Task.Run(connect)).ToArray());
+            Task.WaitAll(Enumerable.Range(0, 10).Select(_ => Task.Run(connect)).ToArray());
         }
 
         [Fact]
         public async Task connect()
         {
-            var uri = new Uri($"wss://{ThisAssembly.Metadata.APP_HOSTNAME}");
-            //var uri = new Uri("wss://localhost:5001");
+            Uri uri;
+            if ("localhost".Equals(hostName, StringComparison.OrdinalIgnoreCase))
+                uri = new Uri($"wss://{hostName}:5001");
+            else
+                uri = new Uri($"wss://{hostName}");
 
             var sender = new ClientWebSocket();
             var sessionId = Guid.NewGuid().ToString();
             sender.Options.SetRequestHeader("X-HUB", sessionId);
-            sender.Options.SetRequestHeader("Authorization", ThisAssembly.Metadata.API_KEY);
+            sender.Options.SetRequestHeader("Authorization", apiKey);
             await sender.ConnectAsync(uri, CancellationToken.None);
 
             var receiver = new ClientWebSocket();
             receiver.Options.SetRequestHeader("X-HUB", sessionId);
-            receiver.Options.SetRequestHeader("Authorization", ThisAssembly.Metadata.API_KEY);
+            receiver.Options.SetRequestHeader("Authorization", apiKey);
             await receiver.ConnectAsync(uri, CancellationToken.None);
 
             var payload = new byte[1024 * 8];
@@ -85,15 +100,19 @@ namespace wsrelay.tests
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public async Task connectdontclose()
         {
-            var uri = new Uri($"wss://{ThisAssembly.Metadata.APP_HOSTNAME}");
+            Uri uri;
+            if ("localhost".Equals(hostName, StringComparison.OrdinalIgnoreCase))
+                uri = new Uri($"wss://{hostName}:5001");
+            else
+                uri = new Uri($"wss://{hostName}");
 
             var sender = new ClientWebSocket();
             var sessionId = Guid.NewGuid().ToString();
             sender.Options.SetRequestHeader("X-HUB", sessionId);
-            sender.Options.SetRequestHeader("Authorization", ThisAssembly.Metadata.API_KEY);
+            sender.Options.SetRequestHeader("Authorization", apiKey);
             await sender.ConnectAsync(uri, CancellationToken.None);
 
             var payload = new byte[1024 * 8];
