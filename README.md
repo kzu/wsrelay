@@ -1,6 +1,10 @@
 ![Icon](https://raw.github.com/kzu/wsrelay/master/icon/32.png) wsrelay: a minimalistic WebSocket relay
 ============
 
+> OBSOLETE: all of this can now be achieved with the [Azure Web PubSub](https://docs.microsoft.com/en-us/azure/azure-web-pubsub/) service, 
+> and easily consumed with [WebSocketeer](https://github.com/devlooped/WebSocketeer).
+
+
 An ASP.NET Core web service that acts as a relay for incoming WebSocket connections 
 based on a required custom `X-HUB` header. 
 
